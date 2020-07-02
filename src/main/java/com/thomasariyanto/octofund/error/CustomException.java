@@ -11,12 +11,29 @@ import javax.validation.ConstraintViolationException;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class CustomException {
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ErrorMessage handleMethodArgumentNotValidExceptions(MethodArgumentNotValidException ex) {
+	    List<String> errors = new ArrayList<String>();
+	    
+	    for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+	        errors.add(error.getDefaultMessage());
+	    }
+	    
+	    ErrorMessage err = new ErrorMessage(HttpStatus.BAD_REQUEST, errors);
+	    
+	    return err;
+	}
+	
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(ConstraintViolationException.class)
 	public ErrorMessage handleConstraintViolationExceptions(ConstraintViolationException ex) {
