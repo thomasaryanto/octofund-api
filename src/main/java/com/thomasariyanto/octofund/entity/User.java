@@ -1,5 +1,7 @@
 package com.thomasariyanto.octofund.entity;
 
+import java.util.Date;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -26,24 +28,32 @@ public class User {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 	
-	@NotEmpty(message = "Email tidak boleh kosong")
+	@NotEmpty(message = "Username tidak boleh kosong!")
+	@Column(unique = true)
+	private String username;
+	
+	@NotEmpty(message = "Email tidak boleh kosong!")
 	@Email(message = "Email tidak valid")
 	@Column(unique = true)
 	private String email;
 	
-	@NotEmpty(message = "Password tidak boleh kosong")
+	@NotEmpty(message = "Password tidak boleh kosong!")
 	@JsonProperty(access = Access.WRITE_ONLY)
 	private String password;
 	
-	@NotEmpty(message = "Nama tidak boleh kosong")
-	private String name;
-	
-	@NotEmpty(message = "Telepon tidak boleh kosong")
+	@NotEmpty(message = "Telepon tidak boleh kosong!")
 	@Column(unique = true)
 	private String phone;
 	
+	@NotEmpty(message = "Nama tidak boleh kosong!")
+	private String name;
+
 	private boolean isVerified;
 	private boolean isKYC;
+	
+	@JsonProperty(access = Access.WRITE_ONLY)
+	private String token;
+	private Date tokenExpired;
 	
 	@ManyToOne(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH })
 	@JoinColumn(name = "role_id")
@@ -117,9 +127,24 @@ public class User {
 	public void setRole(Role role) {
 		this.role = role;
 	}
-
-	
-	
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	public String getToken() {
+		return token;
+	}
+	public void setToken(String token) {
+		this.token = token;
+	}
+	public Date getTokenExpired() {
+		return tokenExpired;
+	}
+	public void setTokenExpired(Date tokenExpired) {
+		this.tokenExpired = tokenExpired;
+	}
 	
 	
 }

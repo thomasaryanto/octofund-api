@@ -23,18 +23,44 @@ public class Member {
     @JsonBackReference
     private User user;
 	
-	@NotEmpty(message = "No KTP tidak boleh kosong")
-	@Column(unique = true)
-	private String identityNumber;
-	
 	@Column(unique = true)
 	private String sid;
 	
 	@Column(unique = true)
 	private String ifua;
 	
+	@NotEmpty(message = "No KTP tidak boleh kosong")
+	@Column(unique = true)
+	private String identityNumber;
+	
+	@NotEmpty(message = "Tanggal lahir tidak boleh kosong!")
+	private String birthDate;
+	
+	@NotEmpty(message = "Tempat lahir tidak boleh kosong!")
+	private String birthPlace;
+	
+	@NotEmpty(message = "Jenis kelamin tidak boleh kosong!")
+	private String sex;
+	
+	@NotEmpty(message = "Agama tidak boleh kosong!")
+	private String religion;
+	
+	@NotEmpty(message = "Pekerjaan tidak boleh kosong!")
+	private String job;
+	
+	@NotEmpty(message = "Status pernikajan tidak boleh kosong!")
+	private String maritalStatus;
+	
+	@NotEmpty(message = "Alamat tidak boleh kosong!")
+	private String address;
+	
+//	@NotEmpty(message = "Foto KTP harus diupload")
 	private String identityPhoto;
+	
+//	@NotEmpty(message = "Foto selfie dengan KTP harus diupload")
 	private String selfiePhoto;	
+	
+	private String signature;
 	private int point;
 	
 	public int getId() {
@@ -85,7 +111,53 @@ public class Member {
 	public void setPoint(int point) {
 		this.point = point;
 	}
-	
-	
+	public String getBirthDate() {
+		return birthDate;
+	}
+	public void setBirthDate(String birthDate) {
+		this.birthDate = birthDate;
+	}
+	public String getBirthPlace() {
+		return birthPlace;
+	}
+	public void setBirthPlace(String birthPlace) {
+		this.birthPlace = birthPlace;
+	}
+	public String getSex() {
+		return sex;
+	}
+	public void setSex(String sex) {
+		this.sex = sex;
+	}
+	public String getReligion() {
+		return religion;
+	}
+	public void setReligion(String religion) {
+		this.religion = religion;
+	}
+	public String getJob() {
+		return job;
+	}
+	public void setJob(String job) {
+		this.job = job;
+	}
+	public String getMaritalStatus() {
+		return maritalStatus;
+	}
+	public void setMaritalStatus(String maritalStatus) {
+		this.maritalStatus = maritalStatus;
+	}
+	public String getAddress() {
+		return address;
+	}
+	public void setAddress(String address) {
+		this.address = address;
+	}
+	public String getSignature() {
+		return signature;
+	}
+	public void setSignature(String signature) {
+		this.signature = signature;
+	}
 	
 }

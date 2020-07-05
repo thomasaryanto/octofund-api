@@ -1,25 +1,32 @@
 package com.thomasariyanto.octofund.controller;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.cloud.gcp.vision.CloudVisionTemplate;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.thomasariyanto.octofund.dao.ManagerRepo;
 import com.thomasariyanto.octofund.dao.MemberRepo;
@@ -28,12 +35,24 @@ import com.thomasariyanto.octofund.dao.UserRepo;
 import com.thomasariyanto.octofund.entity.Manager;
 import com.thomasariyanto.octofund.entity.Member;
 import com.thomasariyanto.octofund.entity.User;
+import com.thomasariyanto.octofund.util.EmailUtil;
+
+import net.bytebuddy.utility.RandomString;
 
 @RestController
 @RequestMapping("/users")
 @CrossOrigin
 public class UserController {
-private PasswordEncoder pwEncoder = new BCryptPasswordEncoder();
+	private String uploadTempPath = System.getProperty("user.dir") + "\\src\\main\\resources\\static\\images\\temp\\";
+	private String uploadIdentityPath = System.getProperty("user.dir") + "\\src\\main\\resources\\static\\images\\identity\\";
+	private String uploadSelfiePath = System.getProperty("user.dir") + "\\src\\main\\resources\\static\\images\\selfie\\";
+	private PasswordEncoder pwEncoder = new BCryptPasswordEncoder();
+	
+	@Autowired
+	private ResourceLoader resourceLoader;
+
+	@Autowired
+	private CloudVisionTemplate cloudVisionTemplate;
 	
 	@Autowired
 	private UserRepo userRepo;
@@ -46,6 +65,14 @@ private PasswordEncoder pwEncoder = new BCryptPasswordEncoder();
 	
 	@Autowired
 	private MemberRepo memberRepo;
+	
+	@Autowired
+	private EmailUtil emailUtil;
+	
+	@GetMapping
+	public Iterable<User> getsers() {
+		return userRepo.findAll();
+	}
 	
 	@GetMapping("/{id}")
 	public User getUserById(@PathVariable int id) {
@@ -83,9 +110,19 @@ private PasswordEncoder pwEncoder = new BCryptPasswordEncoder();
 
 		//encrypt password dan set role
 		String encodedPassword = pwEncoder.encode(member.getUser().getPassword());
+		String token = RandomString.make(30);
+		Date date = new Date();
+		Calendar tokenExpired = Calendar.getInstance();
+		tokenExpired.setTime(date);
+		tokenExpired.add(Calendar.HOUR, 12);
+		
 		member.getUser().setPassword(encodedPassword);
+		member.getUser().setToken(token);
+		member.getUser().setTokenExpired(tokenExpired.getTime());
 		member.getUser().setRole(roleRepo.findById(4).get());
 		memberRepo.save(member);
+		
+		this.emailUtil.sendEmail(member.getUser().getEmail(), "Verifikasi Akun Octofund", "Silahkan verifikasi akun kamu dengan klik link dibawah ini (berlaku 12 jam) : \n\n http://localhost:3000/verify/"+ token +"/");
 		
 		return userRepo.findById(member.getUser().getId()).get();
 		
@@ -97,20 +134,173 @@ private PasswordEncoder pwEncoder = new BCryptPasswordEncoder();
 			User findUser = userRepo.findByEmail(user.getEmail()).get();
 			
 			if(pwEncoder.matches(user.getPassword(), findUser.getPassword())) {
-				return findUser;
+				if(findUser.isVerified()) {
+					return findUser;
+				}
+				else {
+					throw new RuntimeException("Silahkan verifikasi alamat email ("+findUser.getEmail()+") terlebih dahulu!");
+				}
 			}
 			else {
-				throw new RuntimeException("Password salah!");
+				throw new RuntimeException("Password pengguna salah!");
 			}
 		}
 		else {
-			throw new RuntimeException("User tidak ditemukan!");
+			throw new RuntimeException("Pengguna tidak ditemukan!");
 		}
 	}
 	
-	@GetMapping
-	public Iterable<User> getsers() {
-		return userRepo.findAll();
+	@PostMapping("/upload/identityPhoto")
+	public Map<String, String> uploadIdentityPhoto(@RequestParam("file") MultipartFile file) {
+		HashMap<String, String> response = new HashMap<>();
+		String fileExtension = file.getContentType().split("/")[1];
+		String newFileName = RandomString.make(20) + "." + fileExtension;
+
+		String fileName = StringUtils.cleanPath(newFileName);
+		
+		Path path = Paths.get(StringUtils.cleanPath(uploadTempPath) + fileName);
+		
+		try {
+			Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		String ocr = this.cloudVisionTemplate.extractTextFromImage(this.resourceLoader.getResource("file:"+path));
+		System.out.println(ocr);
+		response.put("visionOcr", ocr);
+		response.put("fileName", fileName);
+		return response;
+	}
+	
+	@PostMapping("/upload/selfiePhoto")
+	public Map<String, String> uploadSelfiePhoto(@RequestParam("file") MultipartFile file) {
+		HashMap<String, String> response = new HashMap<>();
+		String fileExtension = file.getContentType().split("/")[1];
+		String newFileName = RandomString.make(20) + "." + fileExtension;
+
+		String fileName = StringUtils.cleanPath(newFileName);
+		
+		Path path = Paths.get(StringUtils.cleanPath(uploadTempPath) + fileName);
+		
+		try {
+			Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		response.put("fileName", fileName);
+		return response;
+	}
+	
+	@GetMapping("/verify/{token}")
+	public String verifyUser(@PathVariable String token) {
+		Date date = new Date();
+		User findUser = userRepo.findByToken(token).get();
+		
+		if (findUser.isVerified()) {
+			throw new RuntimeException("User "+ findUser.getEmail() +" sudah diverifikasi!");
+		}
+		else if (date.after(findUser.getTokenExpired())) {
+			throw new RuntimeException("Token verifikasi sudah kadaluarsa!");
+		}
+		else {
+			findUser.setVerified(true);
+			findUser.setToken(null);
+			findUser.setTokenExpired(null);
+			userRepo.save(findUser);		
+			return "Email berhasil diverifikasi! Kamu sudah dapat login, namun masih harus menunggu verifikasi data diri maksimal 1 x 24 jam.";
+		}
+	}
+	
+	@PostMapping("/verify/resend")
+	public String verifyUserResend(@RequestBody User user) {
+		User findUser;
+		if(user.getEmail() != null) {
+			findUser = userRepo.findByEmail(user.getEmail()).get();
+		} else {
+			findUser = userRepo.findByToken(user.getToken()).get();
+		}
+		
+		Date date = new Date();
+		String newToken = RandomString.make(30);
+		Calendar tokenExpired = Calendar.getInstance();
+		tokenExpired.setTime(date);
+		tokenExpired.add(Calendar.HOUR, 12);
+		
+		if (findUser.isVerified()) {
+			throw new RuntimeException("User "+ findUser.getEmail() +" sudah diverifikasi!");
+		}
+		else {
+			findUser.setToken(newToken);
+			findUser.setTokenExpired(tokenExpired.getTime());
+			userRepo.save(findUser);		
+			
+			this.emailUtil.sendEmail(findUser.getEmail(), "Verifikasi Akun Octofund", "Silahkan verifikasi ulang akun kamu dengan klik link dibawah ini (berlaku 12 jam) : \n\n http://localhost:3000/verify/"+ newToken +"/");
+			
+			return "Verifikasi berhasil dikirim ulang ke email "+ findUser.getEmail();
+		}
+	}
+	
+	@PostMapping("/forgot")
+	public String sendForgotPassowrd(@RequestBody User user) {
+		Date date = new Date();
+		String token = RandomString.make(30);
+		Calendar tokenExpired = Calendar.getInstance();
+		tokenExpired.setTime(date);
+		tokenExpired.add(Calendar.HOUR, 2);
+		
+		User findUser = userRepo.findByEmail(user.getEmail()).get();
+		
+		if (!findUser.isVerified()) {
+			throw new RuntimeException("User "+ findUser.getEmail() +" belum diverifikasi!");
+		}
+		else {
+			findUser.setToken(token);
+			findUser.setTokenExpired(tokenExpired.getTime());
+			userRepo.save(findUser);		
+			
+			this.emailUtil.sendEmail(findUser.getEmail(), "Reset Passowrd Akun Octofund", "Silahkan reset password akun kamu dengan klik link dibawah ini (berlaku 2 jam) : \n\n http://localhost:3000/reset/"+ token +"/");
+			
+			return "Instruksi reset password berhasil dikirim ulang ke email "+ findUser.getEmail();
+		}
+	}
+	
+	@GetMapping("/reset/{token}")
+	public String getResetPassword(@PathVariable String token) {
+		Date date = new Date();
+		User findUser = userRepo.findByToken(token).get();
+		
+		if (!findUser.isVerified()) {
+			throw new RuntimeException("User "+ findUser.getEmail() +" belum diverifikasi!");
+		}
+		else if (date.after(findUser.getTokenExpired())) {
+			throw new RuntimeException("Token reset password sudah kadaluarsa!");
+		}
+		else {
+			return findUser.getEmail();
+		}
+	}
+	
+	@PostMapping("/reset/send")
+	public String getResetPassword(@RequestBody User user) {
+		User findUser = userRepo.findByToken(user.getToken()).get();
+		Date date = new Date();
+		String encodedPassword = pwEncoder.encode(user.getPassword());
+		
+		if (!findUser.isVerified()) {
+			throw new RuntimeException("User "+ findUser.getEmail() +" belum diverifikasi!");
+		}
+		else if (date.after(findUser.getTokenExpired())) {
+			throw new RuntimeException("Token reset password sudah kadaluarsa!");
+		}
+		else {
+			findUser.setPassword(encodedPassword);
+			findUser.setToken(null);
+			findUser.setTokenExpired(null);
+			userRepo.save(findUser);
+			return "Password berhasil di ubah!";
+		}
 	}
 	
 }
