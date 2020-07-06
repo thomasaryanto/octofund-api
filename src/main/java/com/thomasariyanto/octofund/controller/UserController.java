@@ -70,7 +70,7 @@ public class UserController {
 	private EmailUtil emailUtil;
 	
 	@GetMapping
-	public Iterable<User> getsers() {
+	public Iterable<User> getUsers() {
 		return userRepo.findAll();
 	}
 	
@@ -86,6 +86,7 @@ public class UserController {
 		String encodedPassword = pwEncoder.encode(user.getPassword());
 		user.setPassword(encodedPassword);
 		user.setRole(roleRepo.findById(2).get());
+		user.setVerified(true);
 		userRepo.save(user);
 		
 		return userRepo.findById(user.getId()).get();
@@ -98,6 +99,7 @@ public class UserController {
 		String encodedPassword = pwEncoder.encode(manager.getUser().getPassword());
 		manager.getUser().setPassword(encodedPassword);
 		manager.getUser().setRole(roleRepo.findById(3).get());
+		manager.getUser().setVerified(true);
 		managerRepo.save(manager);
 		
 		return userRepo.findById(manager.getUser().getId()).get();
@@ -125,7 +127,6 @@ public class UserController {
 		this.emailUtil.sendEmail(member.getUser().getEmail(), "Verifikasi Akun Octofund", "Silahkan verifikasi akun kamu dengan klik link dibawah ini (berlaku 12 jam) : \n\n http://localhost:3000/verify/"+ token +"/");
 		
 		return userRepo.findById(member.getUser().getId()).get();
-		
 	}
 	
 	@PostMapping("/login")

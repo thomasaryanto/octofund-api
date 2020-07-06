@@ -48,7 +48,7 @@ public class Member {
 	@NotEmpty(message = "Pekerjaan tidak boleh kosong!")
 	private String job;
 	
-	@NotEmpty(message = "Status pernikajan tidak boleh kosong!")
+	@NotEmpty(message = "Status pernikahan tidak boleh kosong!")
 	private String maritalStatus;
 	
 	@NotEmpty(message = "Alamat tidak boleh kosong!")
