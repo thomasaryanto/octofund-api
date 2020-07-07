@@ -15,6 +15,8 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.vision.CloudVisionTemplate;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.StringUtils;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.thomasariyanto.octofund.dao.BankAccountRepo;
 import com.thomasariyanto.octofund.dao.ManagerRepo;
 import com.thomasariyanto.octofund.dao.MemberRepo;
 import com.thomasariyanto.octofund.dao.RoleRepo;
@@ -67,12 +70,16 @@ public class UserController {
 	private MemberRepo memberRepo;
 	
 	@Autowired
+	private BankAccountRepo bankAccountRepo;
+	
+	@Autowired
 	private EmailUtil emailUtil;
 	
 	@GetMapping
 	public Iterable<User> getUsers() {
 		return userRepo.findAll();
 	}
+	
 	
 	@GetMapping("/{id}")
 	public User getUserById(@PathVariable int id) {
@@ -106,9 +113,20 @@ public class UserController {
 	}
 	
 	@PostMapping("/member")
-	public User registerMember(@Valid @RequestBody Member member) {
+	public User registerMember(@Valid @RequestBody Member member) {	
 		//disave dulu biar masuk validation
 		memberRepo.save(member);
+		
+//		BankAccount findBankAccount = member.getUser().getBankAccounts().get(0);
+//		findBankAccount.setUser(member.getUser());
+//		bankAccountRepo.save(findBankAccount);
+		
+//		List<BankAccount> bankAccounts = new ArrayList<BankAccount>();
+//		bankAccounts.add(findBankAccount);
+//		member.getUser().setBankAccounts(bankAccounts);
+		
+//		bankAccountRepo.save(member.getUser().getBankAccounts().get(0));
+//		member.getUser().setBankAccounts(member.getUser().getBankAccounts());
 
 		//encrypt password dan set role
 		String encodedPassword = pwEncoder.encode(member.getUser().getPassword());
@@ -304,4 +322,46 @@ public class UserController {
 		}
 	}
 	
+	
+	//kyc
+	@GetMapping("kyc")
+	public Page<User> getKycUsers(Pageable pageable) {
+		return userRepo.findAllByIsVerifiedAndIsRejectedAndIsKyc(true, false, false, pageable);
+	}
+	
+	@PostMapping("kyc/accept")
+	public String rejectUser(@RequestBody User user ) {
+		User findUser = userRepo.findById(user.getId()).get();
+		if(findUser.isKyc()) {
+			throw new RuntimeException("Nasabah ini sudah terverifikasi KYC!");
+		}
+		else if(!findUser.isVerified()) {
+			throw new RuntimeException("Nasabah ini belum melakukan verifikasi email!");
+		}
+		else {
+			findUser.setKyc(true);
+			findUser.getMember().setSid(user.getMember().getSid());
+			findUser.getMember().setIfua(user.getMember().getIfua());
+			userRepo.save(findUser);
+			this.emailUtil.sendEmail(findUser.getEmail(), "Verifikasi data diri diterima", "Verifikasi data diri kamu berhasil! Sekarang kamu sudah bisa mulai berinvestasi di OctoFund!");
+			return "KYC nasabah berhasil diterima!";
+		}
+	}
+	
+	@PostMapping("kyc/reject")
+	public String rejectUser(@RequestParam String msg, @RequestBody User user ) {
+		User findUser = userRepo.findById(user.getId()).get();
+		if(findUser.isKyc()) {
+			throw new RuntimeException("Nasabah ini sudah terverifikasi KYC!");
+		}
+		else if(!findUser.isVerified()) {
+			throw new RuntimeException("Nasabah ini belum melakukan verifikasi email!");
+		}
+		else {
+			findUser.setRejected(true);
+			userRepo.save(findUser);
+			this.emailUtil.sendEmail(findUser.getEmail(), "Verifikasi data diri ditolak", "Maaf verifikasi data diri anda ditolak dikarenakan hal berikut ini: \n\n" + msg);
+			return "KYC nasabah berhasil ditolak!";
+		}
+	}
 }

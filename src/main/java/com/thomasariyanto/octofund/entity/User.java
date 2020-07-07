@@ -1,6 +1,7 @@
 package com.thomasariyanto.octofund.entity;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -10,11 +11,15 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -48,8 +53,9 @@ public class User {
 	@NotEmpty(message = "Nama tidak boleh kosong!")
 	private String name;
 
+	private boolean isKyc;
+	private boolean isRejected;
 	private boolean isVerified;
-	private boolean isKYC;
 	
 	@JsonProperty(access = Access.WRITE_ONLY)
 	private String token;
@@ -66,6 +72,10 @@ public class User {
 	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JsonManagedReference
 	private Manager manager;
+	
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.ALL)
+	@JsonManagedReference
+	private List<BankAccount> bankAccounts;
 	
 	public int getId() {
 		return id;
@@ -103,12 +113,6 @@ public class User {
 	public void setVerified(boolean isVerified) {
 		this.isVerified = isVerified;
 	}
-	public boolean isKYC() {
-		return isKYC;
-	}
-	public void setKYC(boolean isKYC) {
-		this.isKYC = isKYC;
-	}
 	public Member getMember() {
 		return member;
 	}
@@ -145,6 +149,24 @@ public class User {
 	public void setTokenExpired(Date tokenExpired) {
 		this.tokenExpired = tokenExpired;
 	}
-	
+	public List<BankAccount> getBankAccounts() {
+		return bankAccounts;
+	}
+	public void setBankAccounts(List<BankAccount> bankAccounts) {
+		this.bankAccounts = bankAccounts;
+	}
+	public boolean isKyc() {
+		return isKyc;
+	}
+	public void setKyc(boolean isKyc) {
+		this.isKyc = isKyc;
+	}
+	public boolean isRejected() {
+		return isRejected;
+	}
+	public void setRejected(boolean isRejected) {
+		this.isRejected = isRejected;
+	}
+
 	
 }

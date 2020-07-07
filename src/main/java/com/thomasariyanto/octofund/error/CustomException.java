@@ -10,9 +10,10 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.MailSendException;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -65,9 +66,35 @@ public class CustomException {
 	    return err;
 	}
 	
+	
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(MailSendException.class)
+	public ErrorMessage handleMailSendExceptions(MailSendException ex) {
+		ex.printStackTrace();
+	    ErrorMessage err = new ErrorMessage(HttpStatus.BAD_REQUEST, "Gagal mengirim email!");
+	    return err;
+	}
+	
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(NoSuchElementException.class)
 	public ErrorMessage handleNoSuchElementExceptions(NoSuchElementException ex) {
+		ex.printStackTrace();
+	    ErrorMessage err = new ErrorMessage(HttpStatus.BAD_REQUEST, "Data tidak ditemukan!");
+	    return err;
+	}
+	
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(EmptyResultDataAccessException.class)
+	public ErrorMessage handleEmptyResultDataAccessExceptions(EmptyResultDataAccessException ex) {
+		ex.printStackTrace();
+	    ErrorMessage err = new ErrorMessage(HttpStatus.BAD_REQUEST, "Data tidak ditemukan!");
+	    return err;
+	}
+	
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(NullPointerException.class)
+	public ErrorMessage handleNullPointerExceptions(NullPointerException ex) {
+		ex.printStackTrace();
 	    ErrorMessage err = new ErrorMessage(HttpStatus.BAD_REQUEST, "Data tidak ditemukan!");
 	    return err;
 	}
@@ -75,6 +102,7 @@ public class CustomException {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(RuntimeException.class)
 	public ErrorMessage handleRuntimeExceptions(RuntimeException ex) {
+		ex.printStackTrace();
 	    String error = ex.getMessage();
 	    ErrorMessage err = new ErrorMessage(HttpStatus.BAD_REQUEST, error);
 	    return err;
