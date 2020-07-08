@@ -11,7 +11,8 @@ import com.thomasariyanto.octofund.entity.User;
 public interface UserRepo extends JpaRepository<User, Integer> {
 	public Optional<User> findByEmail(String email);
 	public Optional<User> findByToken(String token);
-	public Page<User> findAllByIsVerifiedAndIsRejectedAndIsKyc(boolean isVerified, boolean isRejected, boolean isKyc, Pageable pageable);
+	public Page<User> findAllByRoleIdAndIsVerifiedAndIsRejectedAndIsKyc(int roleId, boolean isVerified, boolean isRejected, boolean isKyc, Pageable pageable);
+	public Page<User> findAllByRoleId(int roleId, Pageable pageable);
 	public boolean existsByEmail(String email);
 	public boolean existsByToken(String token);
 }

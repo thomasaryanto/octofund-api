@@ -21,9 +21,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,6 +37,7 @@ import com.thomasariyanto.octofund.dao.ManagerRepo;
 import com.thomasariyanto.octofund.dao.MemberRepo;
 import com.thomasariyanto.octofund.dao.RoleRepo;
 import com.thomasariyanto.octofund.dao.UserRepo;
+import com.thomasariyanto.octofund.entity.Bank;
 import com.thomasariyanto.octofund.entity.Manager;
 import com.thomasariyanto.octofund.entity.Member;
 import com.thomasariyanto.octofund.entity.User;
@@ -80,14 +83,19 @@ public class UserController {
 		return userRepo.findAll();
 	}
 	
-	
 	@GetMapping("/{id}")
 	public User getUserById(@PathVariable int id) {
 		return userRepo.findById(id).get();
 	}
 	
+	@GetMapping("/role/{roleId}")
+	public Page<User> getUsersByRole(@PathVariable int roleId, Pageable pageable) {
+		return userRepo.findAllByRoleId(roleId, pageable);
+	}
+	
 	@PostMapping("/staff")
 	public User registerStaff(@Valid @RequestBody User user) {
+		user.setId(0);
 		userRepo.save(user);
 		
 		String encodedPassword = pwEncoder.encode(user.getPassword());
@@ -101,6 +109,7 @@ public class UserController {
 	
 	@PostMapping("/manager")
 	public User registerManager(@Valid @RequestBody Manager manager) {
+		manager.setId(0);
 		managerRepo.save(manager);
 		
 		String encodedPassword = pwEncoder.encode(manager.getUser().getPassword());
@@ -115,6 +124,7 @@ public class UserController {
 	@PostMapping("/member")
 	public User registerMember(@Valid @RequestBody Member member) {	
 		//disave dulu biar masuk validation
+		member.setId(0);
 		memberRepo.save(member);
 		
 //		BankAccount findBankAccount = member.getUser().getBankAccounts().get(0);
@@ -322,11 +332,34 @@ public class UserController {
 		}
 	}
 	
+	//edit user harus ngirim password juga waaupun kosong.
+	@PutMapping
+	public User editUser(@RequestBody User user) {
+		User findUser = userRepo.findById(user.getId()).get();
+		if (!user.getPassword().equalsIgnoreCase("")) {
+			String encodedPassword = pwEncoder.encode(user.getPassword());
+			user.setPassword(encodedPassword);
+		} else {
+			user.setPassword(findUser.getPassword());
+		}
+		user.setRole(findUser.getRole());
+		user.setVerified(findUser.isVerified());
+		user.setKyc(findUser.isKyc());
+		user.setRejected(findUser.isRejected());
+		return userRepo.save(user);
+	}
+	
+	//delete user akan menghapus semua data yg terkait.
+	@DeleteMapping("/{id}")
+	public void deleteUser(@PathVariable int id) {
+		userRepo.deleteById(id);
+	}
+	
 	
 	//kyc
 	@GetMapping("kyc")
 	public Page<User> getKycUsers(Pageable pageable) {
-		return userRepo.findAllByIsVerifiedAndIsRejectedAndIsKyc(true, false, false, pageable);
+		return userRepo.findAllByRoleIdAndIsVerifiedAndIsRejectedAndIsKyc(4, true, false, false, pageable);
 	}
 	
 	@PostMapping("kyc/accept")

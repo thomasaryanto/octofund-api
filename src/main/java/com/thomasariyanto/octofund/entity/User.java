@@ -61,7 +61,7 @@ public class User {
 	private String token;
 	private Date tokenExpired;
 	
-	@ManyToOne(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH })
+	@ManyToOne(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH })
 	@JoinColumn(name = "role_id")
 	private Role role;
 	
