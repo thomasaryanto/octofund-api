@@ -34,7 +34,7 @@ public class BankAccount {
 	
 	@ManyToOne(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH })
 	@JoinColumn(name = "user_id")
-	@JsonBackReference
+	@JsonBackReference(value="user-bankaccount")
 	private User user;
 	
 	@NotEmpty(message = "No rekening tidak boleh kosong!")

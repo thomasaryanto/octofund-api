@@ -23,13 +23,14 @@ public class Manager {
 	
 	@OneToOne
     @MapsId
-    @JsonBackReference
+    @JsonBackReference(value="user-manager")
     private User user;
 	
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "manager", cascade = CascadeType.ALL)
-	@JsonBackReference
+	@JsonIgnore
 	private List<MutualFund> mutualFunds;
 	
+	private String companyName;
 	private String website;
 	private String logo;
 
@@ -72,5 +73,14 @@ public class Manager {
 	public void setMutualFunds(List<MutualFund> mutualFunds) {
 		this.mutualFunds = mutualFunds;
 	}
+
+	public String getCompanyName() {
+		return companyName;
+	}
+
+	public void setCompanyName(String companyName) {
+		this.companyName = companyName;
+	}
+	
 	
 }

@@ -1,14 +1,17 @@
 package com.thomasariyanto.octofund.entity;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -25,16 +28,19 @@ public class MutualFund {
 	
 	@ManyToOne(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH })
 	@JoinColumn(name = "manager_id")
-	@JsonManagedReference
 	private Manager manager;
+	
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "mutualFund", cascade = CascadeType.ALL)
+	@JsonManagedReference(value="mutualfund-pricehistory")
+	private List<PriceHistory> priceHistory;
 	
 	@NotEmpty(message = "Nama reksadana tidak boleh kosong!")
 	private String name;
 	
-	@NotEmpty(message = "Minimum beli tidak boleh kosong!")
+//	@NotEmpty(message = "Minimum beli tidak boleh kosong!")
 	private int minimumBuy;
 	
-	@NotEmpty(message = "Tanggal berdiri tidak boleh kosong!")
+//	@NotEmpty(message = "Tanggal berdiri tidak boleh kosong!")
 	private Date launchDate;
 	
 	@NotEmpty(message = "Jumlah dana kelolaan tidak boleh kosong!")

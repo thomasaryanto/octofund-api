@@ -11,15 +11,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -59,6 +57,9 @@ public class User {
 	
 	@JsonProperty(access = Access.WRITE_ONLY)
 	private String token;
+	
+
+	@JsonFormat(timezone = "GMT+07:00")
 	private Date tokenExpired;
 	
 	@ManyToOne(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH })
@@ -66,15 +67,15 @@ public class User {
 	private Role role;
 	
 	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	@JsonManagedReference
+	@JsonManagedReference(value="user-member")
 	private Member member;
 	
 	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	@JsonManagedReference
+	@JsonManagedReference(value="user-manager")
 	private Manager manager;
 	
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.ALL)
-	@JsonManagedReference
+	@JsonManagedReference(value="user-bankaccount")
 	private List<BankAccount> bankAccounts;
 	
 	public int getId() {

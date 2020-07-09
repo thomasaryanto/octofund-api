@@ -86,10 +86,10 @@ public class BankController {
 	@PutMapping("/accounts")
 	public BankAccount editBankAccount(@Valid @RequestBody BankAccount bankAccount) {
 		BankAccount findBankAccount = bankAccountRepo.findById(bankAccount.getId()).get();
+		User findUser = userRepo.findById(findBankAccount.getUser().getId()).get();
 		Bank findBank = bankRepo.findById(bankAccount.getBank().getId()).get();	
-		User findUser = userRepo.findById(bankAccount.getUser().getId()).get();
-		bankAccount.setBank(findBank);
 		bankAccount.setUser(findUser);
+		bankAccount.setBank(findBank);
 		return bankAccountRepo.save(bankAccount);
 	}
 	

@@ -20,7 +20,7 @@ public class Member {
 	
 	@OneToOne
     @MapsId
-    @JsonBackReference
+    @JsonBackReference(value="user-member")
     private User user;
 	
 	@Column(unique = true)
