@@ -1,6 +1,9 @@
 package com.thomasariyanto.octofund.controller;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -12,11 +15,17 @@ import java.util.Map;
 
 import javax.validation.Valid;
 
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.vision.CloudVisionTemplate;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.StringUtils;
@@ -31,17 +40,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.thomasariyanto.octofund.dao.BankAccountRepo;
 import com.thomasariyanto.octofund.dao.ManagerRepo;
 import com.thomasariyanto.octofund.dao.MemberRepo;
 import com.thomasariyanto.octofund.dao.RoleRepo;
 import com.thomasariyanto.octofund.dao.UserRepo;
-import com.thomasariyanto.octofund.entity.Bank;
 import com.thomasariyanto.octofund.entity.Manager;
 import com.thomasariyanto.octofund.entity.Member;
 import com.thomasariyanto.octofund.entity.User;
 import com.thomasariyanto.octofund.util.EmailUtil;
+import com.thomasariyanto.octofund.util.UploadUtil;
 
 import net.bytebuddy.utility.RandomString;
 
@@ -49,9 +59,6 @@ import net.bytebuddy.utility.RandomString;
 @RequestMapping("/users")
 @CrossOrigin
 public class UserController {
-	private String uploadTempPath = System.getProperty("user.dir") + "\\src\\main\\resources\\static\\images\\temp\\";
-	private String uploadIdentityPath = System.getProperty("user.dir") + "\\src\\main\\resources\\static\\images\\identity\\";
-	private String uploadSelfiePath = System.getProperty("user.dir") + "\\src\\main\\resources\\static\\images\\selfie\\";
 	private PasswordEncoder pwEncoder = new BCryptPasswordEncoder();
 	
 	@Autowired
@@ -77,6 +84,9 @@ public class UserController {
 	
 	@Autowired
 	private EmailUtil emailUtil;
+	
+	@Autowired
+	private UploadUtil fileUploader;
 	
 	@GetMapping
 	public Iterable<User> getUsers() {
@@ -123,21 +133,50 @@ public class UserController {
 	
 	@PostMapping("/member")
 	public User registerMember(@Valid @RequestBody Member member) {	
+		String imagePath = System.getProperty("user.dir") + "\\src\\main\\resources\\static\\images\\";
+		String signatureData = member.getSignature().replace("data:image/png;base64,", "");
+		
 		//disave dulu biar masuk validation
 		member.setId(0);
+		member.setSignature("");
 		memberRepo.save(member);
 		
-//		BankAccount findBankAccount = member.getUser().getBankAccounts().get(0);
-//		findBankAccount.setUser(member.getUser());
-//		bankAccountRepo.save(findBankAccount);
+		//proses foto
+		Path pathTempIdentity = Paths.get(StringUtils.cleanPath(imagePath + "\\temp\\") + member.getIdentityPhoto());
+		Path pathIdentity = Paths.get(StringUtils.cleanPath(imagePath + "\\identityPhoto\\") + member.getIdentityPhoto());
+		try {
+			Files.move(pathTempIdentity, pathIdentity, StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
-//		List<BankAccount> bankAccounts = new ArrayList<BankAccount>();
-//		bankAccounts.add(findBankAccount);
-//		member.getUser().setBankAccounts(bankAccounts);
+		Path pathTempSelfie = Paths.get(StringUtils.cleanPath(imagePath + "\\temp\\") + member.getSelfiePhoto());
+		Path pathSelfie = Paths.get(StringUtils.cleanPath(imagePath + "\\selfiePhoto\\") + member.getSelfiePhoto());
+		try {
+			Files.move(pathTempSelfie, pathSelfie, StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		String identityPhotoUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("users/image/identityPhoto/").path(member.getIdentityPhoto()).toUriString();
+		String selfiePhotoUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("users/image/selfiePhoto/").path(member.getSelfiePhoto()).toUriString();
+		member.setIdentityPhoto(identityPhotoUri);
+		member.setSelfiePhoto(selfiePhotoUri);
 		
-//		bankAccountRepo.save(member.getUser().getBankAccounts().get(0));
-//		member.getUser().setBankAccounts(member.getUser().getBankAccounts());
-
+		//proses tanda tangan
+		String signatureName = RandomString.make(30)+".png";
+		String signatureClean = StringUtils.cleanPath(signatureName); 
+		Path signaturePath = Paths.get(StringUtils.cleanPath(imagePath + "\\signature\\") + signatureClean);
+		InputStream signatureDecode = new ByteArrayInputStream(Base64.decodeBase64(signatureData.getBytes()));
+		
+		try {
+			Files.copy(signatureDecode, signaturePath, StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		String signatureUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("users/image/signature/").path(signatureName).toUriString();
+		member.setSignature(signatureUri);
+			
 		//encrypt password dan set role
 		String encodedPassword = pwEncoder.encode(member.getUser().getPassword());
 		String token = RandomString.make(30);
@@ -179,49 +218,79 @@ public class UserController {
 		}
 	}
 	
-	@PostMapping("/upload/identityPhoto")
+	@PostMapping("/upload/")
 	public Map<String, String> uploadIdentityPhoto(@RequestParam("file") MultipartFile file) {
+		String uploadTempPath = System.getProperty("user.dir") + "\\src\\main\\resources\\static\\images\\temp\\";
 		HashMap<String, String> response = new HashMap<>();
-		String fileExtension = file.getContentType().split("/")[1];
-		String newFileName = RandomString.make(20) + "." + fileExtension;
-
-		String fileName = StringUtils.cleanPath(newFileName);
 		
-		Path path = Paths.get(StringUtils.cleanPath(uploadTempPath) + fileName);
-		
-		try {
-			Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		String ocr = this.cloudVisionTemplate.extractTextFromImage(this.resourceLoader.getResource("file:"+path));
-		System.out.println(ocr);
-		response.put("visionOcr", ocr);
-		response.put("fileName", fileName);
-		return response;
-	}
-	
-	@PostMapping("/upload/selfiePhoto")
-	public Map<String, String> uploadSelfiePhoto(@RequestParam("file") MultipartFile file) {
-		HashMap<String, String> response = new HashMap<>();
-		String fileExtension = file.getContentType().split("/")[1];
-		String newFileName = RandomString.make(20) + "." + fileExtension;
-
-		String fileName = StringUtils.cleanPath(newFileName);
-		
-		Path path = Paths.get(StringUtils.cleanPath(uploadTempPath) + fileName);
-		
-		try {
-			Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		String fileName = fileUploader.uploadFile(file, uploadTempPath);
 
 		response.put("fileName", fileName);
 		return response;
 	}
 	
+//	@PostMapping("/upload/temp/")
+//	public Map<String, String> uploadIdentityPhoto(@RequestParam("file") MultipartFile file) {
+//		String uploadTempPath = System.getProperty("user.dir") + "\\src\\main\\resources\\static\\images\\temp\\";
+//		HashMap<String, String> response = new HashMap<>();
+//		String fileExtension = file.getContentType().split("/")[1];
+//		String newFileName = RandomString.make(20) + "." + fileExtension;
+//
+//		String fileName = StringUtils.cleanPath(newFileName);
+//		
+//		Path path = Paths.get(StringUtils.cleanPath(uploadTempPath) + fileName);
+//		
+//		try {
+//			Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//		
+////		if (type == "identityPhoto" ) {
+////			String ocr = this.cloudVisionTemplate.extractTextFromImage(this.resourceLoader.getResource("file:"+path));
+////			System.out.println(ocr);
+////			response.put("visionOcr", ocr);
+////		}
+//
+//		response.put("fileName", fileName);
+//		return response;
+//	}
+	
+	@GetMapping("/image/{type}/{fileName:.+}")
+	public ResponseEntity<Object> downloadFile(@PathVariable String type, @PathVariable String fileName){
+		String imagePath = System.getProperty("user.dir") + "\\src\\main\\resources\\static\\images\\";
+		Path path = Paths.get(imagePath +"\\"+type+"\\"+ fileName);
+		Resource resource = null;
+		
+		try {
+			resource = new UrlResource(path.toUri());
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		
+		return ResponseEntity.ok().contentType(MediaType.parseMediaType("application/octet-stream")).header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"").body(resource);
+	}
+	
+//	@PostMapping("/upload/selfiePhoto")
+//	public Map<String, String> uploadSelfiePhoto(@RequestParam("file") MultipartFile file) {
+//		HashMap<String, String> response = new HashMap<>();
+//		String fileExtension = file.getContentType().split("/")[1];
+//		String newFileName = RandomString.make(20) + "." + fileExtension;
+//
+//		String fileName = StringUtils.cleanPath(newFileName);
+//		
+//		Path path = Paths.get(StringUtils.cleanPath(uploadTempPath) + fileName);
+//		
+//		try {
+//			Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//
+//		response.put("fileName", fileName);
+//		return response;
+//	}
+//	
 	@GetMapping("/verify/{token}")
 	public String verifyUser(@PathVariable String token) {
 		Date date = new Date();

@@ -1,27 +1,40 @@
 package com.thomasariyanto.octofund.entity;
 
+import java.util.List;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.MapsId;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 
 @Entity
 public class Member {
 	@Id
     @Column(name = "id")
-	@JsonIgnore
     private int id;
 	
 	@OneToOne
     @MapsId
     @JsonBackReference(value="user-member")
     private User user;
+	
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "member", cascade = CascadeType.ALL)
+	@JsonManagedReference(value="member-transaction")
+	private List<Transaction> transactions;
+	
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "member", cascade = CascadeType.ALL)
+	@JsonManagedReference(value="member-portfolio")
+	private List<Portfolio> portfolios;
 	
 	@Column(unique = true)
 	private String sid;
@@ -158,6 +171,18 @@ public class Member {
 	}
 	public void setSignature(String signature) {
 		this.signature = signature;
+	}
+	public List<Transaction> getTransactions() {
+		return transactions;
+	}
+	public void setTransactions(List<Transaction> transactions) {
+		this.transactions = transactions;
+	}
+	public List<Portfolio> getPortfolios() {
+		return portfolios;
+	}
+	public void setPortfolios(List<Portfolio> portfolios) {
+		this.portfolios = portfolios;
 	}
 	
 }

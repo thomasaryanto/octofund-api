@@ -14,13 +14,11 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.NotEmpty;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @Entity
-@JsonInclude(Include.NON_NULL)
+//@JsonInclude(Include.NON_NULL)
 public class MutualFund {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,9 +28,25 @@ public class MutualFund {
 	@JoinColumn(name = "manager_id")
 	private Manager manager;
 	
+	@ManyToOne(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH })
+	@JoinColumn(name = "category_id")
+	private MutualFundCategory mutualFundCategory;
+	
+	@ManyToOne(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH })
+	@JoinColumn(name = "type_id")
+	private MutualFundType mutualFundType;
+	
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "mutualFund", cascade = CascadeType.ALL)
 	@JsonManagedReference(value="mutualfund-pricehistory")
 	private List<PriceHistory> priceHistory;
+	
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "mutualFund", cascade = CascadeType.ALL)
+	@JsonIgnore
+	private List<Transaction> transactions;
+	
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "mutualFund", cascade = CascadeType.ALL)
+	@JsonIgnore
+	private List<Portfolio> portfolios;
 	
 	@NotEmpty(message = "Nama reksadana tidak boleh kosong!")
 	private String name;
@@ -57,6 +71,9 @@ public class MutualFund {
 	
 	private double lastPrice;
 	private Date lastUpdatePrice;
+	
+	private boolean isLimited;
+	private double stock;
 
 	public int getId() {
 		return id;
@@ -145,5 +162,62 @@ public class MutualFund {
 	public void setLastPrice(double lastPrice) {
 		this.lastPrice = lastPrice;
 	}
+
+	public List<PriceHistory> getPriceHistory() {
+		return priceHistory;
+	}
+
+	public void setPriceHistory(List<PriceHistory> priceHistory) {
+		this.priceHistory = priceHistory;
+	}
+
+	public boolean isLimited() {
+		return isLimited;
+	}
+
+	public void setLimited(boolean isLimited) {
+		this.isLimited = isLimited;
+	}
+
+	public double getStock() {
+		return stock;
+	}
+
+	public void setStock(double stock) {
+		this.stock = stock;
+	}
+
+	public MutualFundCategory getMutualFundCategory() {
+		return mutualFundCategory;
+	}
+
+	public void setMutualFundCategory(MutualFundCategory mutualFundCategory) {
+		this.mutualFundCategory = mutualFundCategory;
+	}
+
+	public MutualFundType getMutualFundType() {
+		return mutualFundType;
+	}
+
+	public void setMutualFundType(MutualFundType mutualFundType) {
+		this.mutualFundType = mutualFundType;
+	}
+
+	public List<Transaction> getTransactions() {
+		return transactions;
+	}
+
+	public void setTransactions(List<Transaction> transactions) {
+		this.transactions = transactions;
+	}
+
+	public List<Portfolio> getPortfolios() {
+		return portfolios;
+	}
+
+	public void setPortfolios(List<Portfolio> portfolios) {
+		this.portfolios = portfolios;
+	}
+	
 	
 }
