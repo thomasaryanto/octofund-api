@@ -29,11 +29,11 @@ public class Member {
     private User user;
 	
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "member", cascade = CascadeType.ALL)
-	@JsonManagedReference(value="member-transaction")
+	@JsonIgnore
 	private List<Transaction> transactions;
 	
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "member", cascade = CascadeType.ALL)
-	@JsonManagedReference(value="member-portfolio")
+	@JsonIgnore
 	private List<Portfolio> portfolios;
 	
 	@Column(unique = true)
@@ -66,6 +66,8 @@ public class Member {
 	
 	@NotEmpty(message = "Alamat tidak boleh kosong!")
 	private String address;
+	
+	private String identityName;
 	
 //	@NotEmpty(message = "Foto KTP harus diupload")
 	private String identityPhoto;
@@ -183,6 +185,12 @@ public class Member {
 	}
 	public void setPortfolios(List<Portfolio> portfolios) {
 		this.portfolios = portfolios;
+	}
+	public String getIdentityName() {
+		return identityName;
+	}
+	public void setIdentityName(String identityName) {
+		this.identityName = identityName;
 	}
 	
 }

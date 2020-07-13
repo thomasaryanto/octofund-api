@@ -189,6 +189,7 @@ public class UserController {
 		member.getUser().setToken(token);
 		member.getUser().setTokenExpired(tokenExpired.getTime());
 		member.getUser().setRole(roleRepo.findById(4).get());
+		member.setIdentityName(member.getUser().getName());
 		memberRepo.save(member);
 		
 		this.emailUtil.sendEmail(member.getUser().getEmail(), "Verifikasi Akun Octofund", "Silahkan verifikasi akun kamu dengan klik link dibawah ini (berlaku 12 jam) : \n\n http://localhost:3000/verify/"+ token +"/");

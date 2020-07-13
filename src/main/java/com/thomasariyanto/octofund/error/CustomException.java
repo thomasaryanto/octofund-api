@@ -12,13 +12,13 @@ import javax.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
-import org.springframework.jdbc.datasource.init.ScriptStatementFailedException;
 import org.springframework.mail.MailSendException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class CustomException {
@@ -97,6 +97,15 @@ public class CustomException {
 	public ErrorMessage handleNullPointerExceptions(NullPointerException ex) {
 		ex.printStackTrace();
 	    ErrorMessage err = new ErrorMessage(HttpStatus.BAD_REQUEST, "Data tidak ditemukan!");
+	    return err;
+	}
+	
+	
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+	public ErrorMessage handleMethodArgumentTypeMismatchExceptions(MethodArgumentTypeMismatchException ex) {
+		ex.printStackTrace();
+	    ErrorMessage err = new ErrorMessage(HttpStatus.BAD_REQUEST, "Input tidak valid!");
 	    return err;
 	}
 	

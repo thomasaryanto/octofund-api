@@ -51,15 +51,14 @@ public class BankController {
 		return bankRepo.findById(id).get();
 	}
 	
-	@GetMapping("/{id}/accounts")
-	public List<BankAccount> getBankAccountsByBankId(@PathVariable int id) {
-		Bank findBank = bankRepo.findById(id).get();
-		return findBank.getBankAccounts();
-	}
-	
 	@GetMapping("/accounts/{id}")
 	public BankAccount getBankAccountById(@PathVariable int id) {
 		return bankAccountRepo.findById(id).get();
+	}
+	
+	@GetMapping("/accounts/user/{userId}")
+	public Iterable<BankAccount> getBankAccountByUserId(@PathVariable int userId) {
+		return bankAccountRepo.findAllByUserId(userId);
 	}
 	
 	@PostMapping

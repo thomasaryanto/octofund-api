@@ -19,10 +19,10 @@ public class Transaction {
 	private int id;
 	private int type;
 	private Date date;
+	private String memberName;
 	private String productName;
 	private String managerName;
 	private String bankName;
-	private String bankAccountNumber;
 	private long totalPrice;
 	private double totalUnit;
 	private String paymentProof;
@@ -39,7 +39,6 @@ public class Transaction {
 	
 	@ManyToOne(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH })
 	@JoinColumn(name = "member_id")
-	@JsonBackReference(value="member-transaction")
     private Member member;
 	
 	@ManyToOne(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH })
@@ -118,12 +117,6 @@ public class Transaction {
 	public void setBankName(String bankName) {
 		this.bankName = bankName;
 	}
-	public String getBankAccountNumber() {
-		return bankAccountNumber;
-	}
-	public void setBankAccountNumber(String bankAccountNumber) {
-		this.bankAccountNumber = bankAccountNumber;
-	}
 	public String getPaymentProof() {
 		return paymentProof;
 	}
@@ -141,6 +134,12 @@ public class Transaction {
 	}
 	public void setTotalUnit(double totalUnit) {
 		this.totalUnit = totalUnit;
+	}
+	public String getMemberName() {
+		return memberName;
+	}
+	public void setMemberName(String memberName) {
+		this.memberName = memberName;
 	}
 	
 }

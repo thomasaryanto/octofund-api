@@ -21,7 +21,6 @@ public class Portfolio {
 	
 	@ManyToOne(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH })
 	@JoinColumn(name = "member_id")
-	@JsonBackReference(value="member-portfolio")
     private Member member;
 	
 	@ManyToOne(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH })
