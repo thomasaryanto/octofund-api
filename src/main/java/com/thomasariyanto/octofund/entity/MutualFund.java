@@ -48,6 +48,19 @@ public class MutualFund {
 	@JsonIgnore
 	private List<Portfolio> portfolios;
 	
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "productOne", cascade = CascadeType.ALL)
+	@JsonIgnore
+	private List<MutualFundPackage> mutualFundPackagesOne;
+	
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "productTwo", cascade = CascadeType.ALL)
+	@JsonIgnore
+	private List<MutualFundPackage> mutualFundPackagesTwo;
+	
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "productThree", cascade = CascadeType.ALL)
+	@JsonIgnore
+	private List<MutualFundPackage> mutualFundPackagesThree;
+
+	
 	@NotEmpty(message = "Nama reksadana tidak boleh kosong!")
 	private String name;
 	
@@ -218,6 +231,28 @@ public class MutualFund {
 	public void setPortfolios(List<Portfolio> portfolios) {
 		this.portfolios = portfolios;
 	}
-	
-	
+
+	public List<MutualFundPackage> getMutualFundPackagesOne() {
+		return mutualFundPackagesOne;
+	}
+
+	public void setMutualFundPackagesOne(List<MutualFundPackage> mutualFundPackagesOne) {
+		this.mutualFundPackagesOne = mutualFundPackagesOne;
+	}
+
+	public List<MutualFundPackage> getMutualFundPackagesTwo() {
+		return mutualFundPackagesTwo;
+	}
+
+	public void setMutualFundPackagesTwo(List<MutualFundPackage> mutualFundPackagesTwo) {
+		this.mutualFundPackagesTwo = mutualFundPackagesTwo;
+	}
+
+	public List<MutualFundPackage> getMutualFundPackagesThree() {
+		return mutualFundPackagesThree;
+	}
+
+	public void setMutualFundPackagesThree(List<MutualFundPackage> mutualFundPackagesThree) {
+		this.mutualFundPackagesThree = mutualFundPackagesThree;
+	}
 }

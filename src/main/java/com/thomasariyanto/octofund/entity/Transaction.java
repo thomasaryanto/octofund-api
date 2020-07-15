@@ -34,10 +34,6 @@ public class Transaction {
 	private TransactionStatus transactionStatus;
 	
 	@ManyToOne(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH })
-	@JoinColumn(name = "bank_account_id")
-	private BankAccount bankAccount;
-	
-	@ManyToOne(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH })
 	@JoinColumn(name = "member_id")
     private Member member;
 	
@@ -104,12 +100,6 @@ public class Transaction {
 	}
 	public void setMutualFund(MutualFund mutualFund) {
 		this.mutualFund = mutualFund;
-	}
-	public BankAccount getBankAccount() {
-		return bankAccount;
-	}
-	public void setBankAccount(BankAccount bankAccount) {
-		this.bankAccount = bankAccount;
 	}
 	public String getBankName() {
 		return bankName;

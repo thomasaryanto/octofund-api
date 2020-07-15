@@ -38,10 +38,6 @@ public class BankAccount {
 	@JsonBackReference(value="user-bankaccount")
 	private User user;
 	
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "bankAccount", cascade = CascadeType.ALL)
-	@JsonIgnore
-	private List<Transaction> transaction;
-	
 	@NotEmpty(message = "No rekening tidak boleh kosong!")
 	private String accountNumber;
 	
@@ -86,14 +82,6 @@ public class BankAccount {
 
 	public void setUser(User user) {
 		this.user = user;
-	}
-
-	public List<Transaction> getTransaction() {
-		return transaction;
-	}
-
-	public void setTransaction(List<Transaction> transaction) {
-		this.transaction = transaction;
 	}
 	
 }

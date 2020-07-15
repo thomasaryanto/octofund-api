@@ -13,6 +13,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.MailSendException;
+import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -100,6 +101,13 @@ public class CustomException {
 	    return err;
 	}
 	
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(JpaObjectRetrievalFailureException.class)
+	public ErrorMessage handleJpaObjectRetrievalFailureExceptions(JpaObjectRetrievalFailureException ex) {
+		ex.printStackTrace();
+	    ErrorMessage err = new ErrorMessage(HttpStatus.BAD_REQUEST, "Data tidak ditemukan!");
+	    return err;
+	}
 	
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)

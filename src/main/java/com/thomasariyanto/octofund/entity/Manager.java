@@ -30,6 +30,10 @@ public class Manager {
 	@JsonIgnore
 	private List<MutualFund> mutualFunds;
 	
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "manager", cascade = CascadeType.ALL)
+	@JsonIgnore
+	private List<MutualFundPackage> mutualFundPackages;
+	
 	private String companyName;
 	private String website;
 	private String logo;
@@ -80,6 +84,14 @@ public class Manager {
 
 	public void setCompanyName(String companyName) {
 		this.companyName = companyName;
+	}
+
+	public List<MutualFundPackage> getMutualFundPackages() {
+		return mutualFundPackages;
+	}
+
+	public void setMutualFundPackages(List<MutualFundPackage> mutualFundPackages) {
+		this.mutualFundPackages = mutualFundPackages;
 	}
 	
 	
