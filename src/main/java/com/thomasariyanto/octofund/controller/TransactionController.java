@@ -12,7 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -85,8 +87,12 @@ public class TransactionController {
 	}
 	
 	@GetMapping("/member/{type}/{memberId}")
-	public Iterable<Transaction> getTransactionByMemberId(@PathVariable int type, @PathVariable int memberId, Pageable pageable) {
-		return transactionRepo.findAllByTypeAndMemberId(type, memberId, pageable);
+	public Page<Transaction> getTransactionByMemberId(@PathVariable int type, @PathVariable int memberId, @RequestParam(value="page", defaultValue="0") Integer pageNo, @RequestParam(value="size", defaultValue="2") Integer pageSize, @RequestParam(value="sortKey", defaultValue="id") String sortKey, @RequestParam(value="sortType", defaultValue="asc") String sortType) {
+		Sort sort = sortType.equalsIgnoreCase("asc") ? Sort.by(sortKey).ascending() : Sort.by(sortKey).descending();
+		Pageable page = PageRequest.of(pageNo, pageSize, sort);
+		Page<Transaction> pagedResult = transactionRepo.findAllByTypeAndMemberId(type, memberId, page);
+		
+		return pagedResult;
 	}
 	
 	@GetMapping("/manager/{managerId}")

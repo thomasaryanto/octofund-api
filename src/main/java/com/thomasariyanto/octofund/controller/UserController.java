@@ -403,12 +403,35 @@ public class UserController {
 	}
 	
 	//edit user harus ngirim password juga waaupun kosong.
+	//edit user dari admin
 	@PutMapping
 	public User editUser(@RequestBody User user) {
 		User findUser = userRepo.findById(user.getId()).get();
 		if (!user.getPassword().equalsIgnoreCase("")) {
 			String encodedPassword = pwEncoder.encode(user.getPassword());
 			user.setPassword(encodedPassword);
+		} else {
+			user.setPassword(findUser.getPassword());
+		}
+		user.setRole(findUser.getRole());
+		user.setVerified(findUser.isVerified());
+		user.setKyc(findUser.isKyc());
+		user.setRejected(findUser.isRejected());
+		return userRepo.save(user);
+	}
+	
+	//edit user sendiri
+	@PutMapping("/edit")
+	public User editUserAuth(@RequestBody User user, @RequestParam(value="oldPassword", defaultValue="") String oldPassword) {
+		User findUser = userRepo.findById(user.getId()).get();
+		if (!user.getPassword().equalsIgnoreCase("")) {
+			if(pwEncoder.matches(oldPassword, findUser.getPassword())) {
+				String encodedPassword = pwEncoder.encode(user.getPassword());
+				user.setPassword(encodedPassword);
+			} else {
+				throw new RuntimeException("Password lama salah!");
+			}
+			
 		} else {
 			user.setPassword(findUser.getPassword());
 		}

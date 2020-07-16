@@ -19,7 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -50,6 +52,7 @@ import com.thomasariyanto.octofund.entity.MutualFundCategory;
 import com.thomasariyanto.octofund.entity.MutualFundPackage;
 import com.thomasariyanto.octofund.entity.MutualFundType;
 import com.thomasariyanto.octofund.entity.PriceHistory;
+import com.thomasariyanto.octofund.entity.Transaction;
 import com.thomasariyanto.octofund.util.UploadUtil;
 
 @RestController
@@ -78,8 +81,33 @@ public class MutualFundController {
 	private UploadUtil fileUploader;
 	
 	@GetMapping
-	public Iterable<MutualFund> getMutualFunds() {
-		return mutualFundRepo.findAll();
+	public Page<MutualFund> getMutualFunds(@RequestParam(value="page", defaultValue="0") Integer pageNo, 
+			@RequestParam(value="size", defaultValue="2") Integer pageSize, 
+			@RequestParam(value="sortKey", defaultValue="id") String sortKey, 
+			@RequestParam(value="sortType", defaultValue="asc") String sortType,
+			@RequestParam(value="filterKey", defaultValue="none") String filterKey,
+			@RequestParam(value="filterValue", defaultValue="all") String filterValue,
+			@RequestParam(value="keyword", defaultValue="") String keyword) {
+		Sort sort = sortType.equalsIgnoreCase("asc") ? Sort.by(sortKey).ascending() : Sort.by(sortKey).descending();
+		Pageable page = PageRequest.of(pageNo, pageSize, sort);
+		
+		if(filterKey.equals("category")) {
+			Page<MutualFund> pagedResult = mutualFundRepo.findAllByNameContainingAndMutualFundCategoryId(keyword, Integer.parseInt(filterValue), page);
+			return pagedResult;
+		} 
+		else if (filterKey.equals("price")) {
+			String[] price = filterValue.split("-");
+			Page<MutualFund> pagedResult = mutualFundRepo.findAllByNameContainingAndLastPriceBetween(keyword, Double.parseDouble(price[0]), Double.parseDouble(price[1]), page);
+			return pagedResult;
+		}
+		else {
+			Page<MutualFund> pagedResult = mutualFundRepo.findAllByNameContaining(keyword, page);
+			return pagedResult;
+		}
+		
+		
+		
+		
 	}
 	
 	@GetMapping("/{id}")
