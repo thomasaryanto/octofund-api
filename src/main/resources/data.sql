@@ -1,7 +1,6 @@
 INSERT INTO role (id, name) VALUES (1, 'Admin');
-INSERT INTO role (id, name) VALUES (2, 'Staff');
-INSERT INTO role (id, name) VALUES (3, 'Manager');
-INSERT INTO role (id, name) VALUES (4, 'Member');
+INSERT INTO role (id, name) VALUES (2, 'Manager');
+INSERT INTO role (id, name) VALUES (3, 'Member');
 
 INSERT INTO bank (id, name, logo, short_name) VALUES (1, 'BANK CIMB Niaga', null, 'CIMB NIAGA');
 

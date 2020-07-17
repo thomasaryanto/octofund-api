@@ -8,5 +8,5 @@ import com.thomasariyanto.octofund.entity.MutualFundPackage;
 
 public interface MutualFundPackageRepo extends JpaRepository<MutualFundPackage, Integer> {
 	public Page<MutualFundPackage> findAllByManagerId(int managerId, Pageable pageable);
-
+	public Page<MutualFundPackage> findAll(Pageable pageable);
 }

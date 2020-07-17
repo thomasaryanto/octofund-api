@@ -29,7 +29,7 @@ public class BankAccount {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 	
-	@ManyToOne(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH })
+	@ManyToOne(cascade = { CascadeType.DETACH, CascadeType.REFRESH })
 	@JoinColumn(name = "bank_id")
 	private Bank bank;
 	

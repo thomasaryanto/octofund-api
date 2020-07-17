@@ -29,8 +29,8 @@ public class MutualFundPackageController {
 	private MutualFundPackageRepo mutualFundPackageRepo;
 	
 	@GetMapping
-	public Iterable<MutualFundPackage> getMutualFundPackage() {
-		return mutualFundPackageRepo.findAll();
+	public Page<MutualFundPackage> getMutualFundPackage(Pageable pageable) {
+		return mutualFundPackageRepo.findAll(pageable);
 	}
 	
 	@GetMapping("/{id}")

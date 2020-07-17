@@ -1,5 +1,7 @@
 package com.thomasariyanto.octofund.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,5 +34,10 @@ public class PorfolioController {
 	@GetMapping("/member/{memberId}")
 	public Page<Portfolio> getPortfolioByMemberId(@PathVariable int memberId, Pageable pageable) {
 		return portfolioRepo.findAllByMemberId(memberId, pageable);
+	}
+	
+	@GetMapping("/member/{memberId}/all")
+	public List<Portfolio> getAllPortfolioByMemberId(@PathVariable int memberId) {
+		return portfolioRepo.findAllByMemberId(memberId);
 	}
 }

@@ -12,6 +12,7 @@ import javax.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.mail.MailSendException;
 import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
 import org.springframework.validation.FieldError;
@@ -116,6 +117,16 @@ public class CustomException {
 	    ErrorMessage err = new ErrorMessage(HttpStatus.BAD_REQUEST, "Input tidak valid!");
 	    return err;
 	}
+	
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public ErrorMessage handleHttpMessageNotReadableExceptions(HttpMessageNotReadableException ex) {
+		ex.printStackTrace();
+	    ErrorMessage err = new ErrorMessage(HttpStatus.BAD_REQUEST, "Input tidak valid!");
+	    return err;
+	}
+	
+	
 	
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(RuntimeException.class)

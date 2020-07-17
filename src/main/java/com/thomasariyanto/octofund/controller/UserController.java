@@ -11,6 +11,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.validation.Valid;
@@ -50,6 +51,7 @@ import com.thomasariyanto.octofund.dao.UserRepo;
 import com.thomasariyanto.octofund.entity.Manager;
 import com.thomasariyanto.octofund.entity.Member;
 import com.thomasariyanto.octofund.entity.User;
+import com.thomasariyanto.octofund.projection.TransactionStatistic;
 import com.thomasariyanto.octofund.util.EmailUtil;
 import com.thomasariyanto.octofund.util.UploadUtil;
 
@@ -103,14 +105,19 @@ public class UserController {
 		return userRepo.findAllByRoleId(roleId, pageable);
 	}
 	
-	@PostMapping("/staff")
+	@GetMapping("/member/statistics")
+	public List<TransactionStatistic> getMemberStatistics(@RequestParam(value="type", defaultValue="1") Integer type) {
+		return memberRepo.getStatistics(type);
+	}
+	
+	@PostMapping("/admin")
 	public User registerStaff(@Valid @RequestBody User user) {
 		user.setId(0);
 		userRepo.save(user);
 		
 		String encodedPassword = pwEncoder.encode(user.getPassword());
 		user.setPassword(encodedPassword);
-		user.setRole(roleRepo.findById(2).get());
+		user.setRole(roleRepo.findById(1).get());
 		user.setVerified(true);
 		userRepo.save(user);
 		
@@ -124,7 +131,7 @@ public class UserController {
 		
 		String encodedPassword = pwEncoder.encode(manager.getUser().getPassword());
 		manager.getUser().setPassword(encodedPassword);
-		manager.getUser().setRole(roleRepo.findById(3).get());
+		manager.getUser().setRole(roleRepo.findById(2).get());
 		manager.getUser().setVerified(true);
 		managerRepo.save(manager);
 		
@@ -188,7 +195,7 @@ public class UserController {
 		member.getUser().setPassword(encodedPassword);
 		member.getUser().setToken(token);
 		member.getUser().setTokenExpired(tokenExpired.getTime());
-		member.getUser().setRole(roleRepo.findById(4).get());
+		member.getUser().setRole(roleRepo.findById(3).get());
 		member.setIdentityName(member.getUser().getName());
 		memberRepo.save(member);
 		
@@ -435,6 +442,11 @@ public class UserController {
 		} else {
 			user.setPassword(findUser.getPassword());
 		}
+		
+		if(user.getMember() != null) {
+			user.getMember().setIdentityName(user.getName());
+		}
+		
 		user.setRole(findUser.getRole());
 		user.setVerified(findUser.isVerified());
 		user.setKyc(findUser.isKyc());
@@ -452,7 +464,7 @@ public class UserController {
 	//kyc
 	@GetMapping("kyc")
 	public Page<User> getKycUsers(Pageable pageable) {
-		return userRepo.findAllByRoleIdAndIsVerifiedAndIsRejectedAndIsKyc(4, true, false, false, pageable);
+		return userRepo.findAllByRoleIdAndIsVerifiedAndIsRejectedAndIsKyc(3, true, false, false, pageable);
 	}
 	
 	@PostMapping("kyc/accept")

@@ -41,18 +41,15 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.thomasariyanto.octofund.dao.ManagerRepo;
 import com.thomasariyanto.octofund.dao.MutualFundCategoryRepo;
-import com.thomasariyanto.octofund.dao.MutualFundPackageRepo;
 import com.thomasariyanto.octofund.dao.MutualFundRepo;
 import com.thomasariyanto.octofund.dao.MutualFundTypeRepo;
 import com.thomasariyanto.octofund.dao.PriceHistoryRepo;
-import com.thomasariyanto.octofund.entity.Bank;
 import com.thomasariyanto.octofund.entity.Manager;
 import com.thomasariyanto.octofund.entity.MutualFund;
 import com.thomasariyanto.octofund.entity.MutualFundCategory;
-import com.thomasariyanto.octofund.entity.MutualFundPackage;
 import com.thomasariyanto.octofund.entity.MutualFundType;
 import com.thomasariyanto.octofund.entity.PriceHistory;
-import com.thomasariyanto.octofund.entity.Transaction;
+import com.thomasariyanto.octofund.projection.TransactionStatistic;
 import com.thomasariyanto.octofund.util.UploadUtil;
 
 @RestController
@@ -68,8 +65,6 @@ public class MutualFundController {
 	
 	@Autowired
 	private MutualFundTypeRepo mutualFundTypeRepo;
-	
-	
 	
 	@Autowired
 	private PriceHistoryRepo priceHistoryRepo;
@@ -105,14 +100,16 @@ public class MutualFundController {
 			return pagedResult;
 		}
 		
-		
-		
-		
 	}
 	
 	@GetMapping("/{id}")
 	public MutualFund getMutualFundById(@PathVariable int id) {
 		return mutualFundRepo.findById(id).get();
+	}
+	
+	@GetMapping("/statistics")
+	public List<TransactionStatistic> getMutualFundStatistics(@RequestParam(value="type", defaultValue="1") Integer type) {
+		return mutualFundRepo.getStatistics(type);
 	}
 	
 	@GetMapping("/manager/{managerId}")
