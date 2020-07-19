@@ -11,33 +11,34 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.thomasariyanto.octofund.dao.PortfolioRepo;
 import com.thomasariyanto.octofund.entity.Portfolio;
+import com.thomasariyanto.octofund.service.PortfolioService;
 
 @RestController
 @RequestMapping("/portfolios")
 @CrossOrigin
-public class PorfolioController {
+public class PortfolioController {
+	
 	@Autowired 
-	PortfolioRepo portfolioRepo;
+	PortfolioService portfolioService;
 	
 	@GetMapping
 	public Iterable<Portfolio> getPortfolios() {
-		return portfolioRepo.findAll();
+		return portfolioService.getPortfolios();
 	}
 	
 	@GetMapping("/{id}")
 	public Portfolio getPortfolioById(@PathVariable int id) {
-		return portfolioRepo.findById(id).get();
+		return portfolioService.getPortfolioById(id);
 	}
 	
 	@GetMapping("/member/{memberId}")
 	public Page<Portfolio> getPortfolioByMemberId(@PathVariable int memberId, Pageable pageable) {
-		return portfolioRepo.findAllByMemberId(memberId, pageable);
+		return portfolioService.getPortfolioByMemberId(memberId, pageable);
 	}
 	
 	@GetMapping("/member/{memberId}/all")
 	public List<Portfolio> getAllPortfolioByMemberId(@PathVariable int memberId) {
-		return portfolioRepo.findAllByMemberId(memberId);
+		return portfolioService.getAllPortfolioByMemberId(memberId);
 	}
 }

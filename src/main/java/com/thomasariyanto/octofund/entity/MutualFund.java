@@ -66,10 +66,7 @@ public class MutualFund {
 	
 //	@NotEmpty(message = "Minimum beli tidak boleh kosong!")
 	private int minimumBuy;
-	
-//	@NotEmpty(message = "Tanggal berdiri tidak boleh kosong!")
-	private Date launchDate;
-	
+
 	@NotEmpty(message = "Jumlah dana kelolaan tidak boleh kosong!")
 	private String totalFund;
 	
@@ -110,14 +107,6 @@ public class MutualFund {
 
 	public void setMinimumBuy(int minimumBuy) {
 		this.minimumBuy = minimumBuy;
-	}
-
-	public Date getLaunchDate() {
-		return launchDate;
-	}
-
-	public void setLaunchDate(Date launchDate) {
-		this.launchDate = launchDate;
 	}
 
 	public String getTotalFund() {

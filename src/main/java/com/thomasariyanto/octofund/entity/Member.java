@@ -14,7 +14,6 @@ import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 
 @Entity
@@ -45,12 +44,6 @@ public class Member {
 	@NotEmpty(message = "No KTP tidak boleh kosong")
 	@Column(unique = true)
 	private String identityNumber;
-	
-	@NotEmpty(message = "Tanggal lahir tidak boleh kosong!")
-	private String birthDate;
-	
-	@NotEmpty(message = "Tempat lahir tidak boleh kosong!")
-	private String birthPlace;
 	
 	@NotEmpty(message = "Jenis kelamin tidak boleh kosong!")
 	private String sex;
@@ -125,18 +118,6 @@ public class Member {
 	}
 	public void setPoint(int point) {
 		this.point = point;
-	}
-	public String getBirthDate() {
-		return birthDate;
-	}
-	public void setBirthDate(String birthDate) {
-		this.birthDate = birthDate;
-	}
-	public String getBirthPlace() {
-		return birthPlace;
-	}
-	public void setBirthPlace(String birthPlace) {
-		this.birthPlace = birthPlace;
 	}
 	public String getSex() {
 		return sex;
