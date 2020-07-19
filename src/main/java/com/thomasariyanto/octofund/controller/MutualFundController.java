@@ -54,6 +54,11 @@ public class MutualFundController {
 		return mutualFundService.getMutualFundById(id);
 	}
 	
+	@GetMapping("/count/{id}")
+	public long getTransactionCount(@PathVariable int id) {
+		return mutualFundService.getTransactionCount(id);
+	}
+	
 	@GetMapping("/statistics")
 	public List<TransactionStatistic> getMutualFundStatistics(@RequestParam(value="type", defaultValue="1") Integer type) {
 		return mutualFundService.getMutualFundStatistics(type);

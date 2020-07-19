@@ -15,4 +15,5 @@ public interface TransactionRepo extends JpaRepository<Transaction, Integer> {
 	public List<Transaction> findAllByMutualFundIdAndTransactionStatusId(int mutualFundId, int transactionStatusId);
 	public List<Transaction> findAllByMemberIdAndTransactionStatusId(int memberId, int transactionStatusId);
 	public Page<Transaction> findAllByTransactionStatusIdAndMutualFundManagerId(int statusId, int managerId, Pageable pageable);
+	public long countByMutualFundId(int mutualFundId);
 }

@@ -120,6 +120,11 @@ public class MutualFundServiceImpl implements MutualFundService {
 	}
 	
 	@Override
+	public long getTransactionCount(int mutualFundId) {
+		return transactionRepo.countByMutualFundId(mutualFundId);
+	}
+	
+	@Override
 	public Page<MutualFund> getMutualFundByManagerId(int managerId, Pageable pageable) {
 		return mutualFundRepo.findAllByManagerId(managerId, pageable);
 	}
