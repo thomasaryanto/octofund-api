@@ -24,4 +24,12 @@ public interface MutualFundRepo extends JpaRepository<MutualFund, Integer> {
 			+ "FROM mutual_fund m join transaction t on m.id = t.product_id "
 			+ "where t.type = ?1 group by m.id order by totalTransaction DESC", nativeQuery = true)
 	public List<TransactionStatistic> getStatistics(int typeId);
+	
+	@Query(value = "SELECT m.id, m.name, "
+			+ "sum(t.total_unit) as totalUnit, "
+			+ "count(t.id) as countTransaction, "
+			+ "sum(t.total_price) as totalTransaction "
+			+ "FROM mutual_fund m join transaction t on m.id = t.product_id "
+			+ "where t.type = ?1 and m.manager_id = ?2 and t.status_id = 4 group by m.id order by totalTransaction DESC", nativeQuery = true)
+	public List<TransactionStatistic> getStatisticsManager(int typeId, int managerId);
 }

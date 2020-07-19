@@ -59,6 +59,11 @@ public class MutualFundController {
 		return mutualFundService.getMutualFundStatistics(type);
 	}
 	
+	@GetMapping("/statistics/manager/{managerId}")
+	public List<TransactionStatistic> getMutualFundStatisticsByManager(@PathVariable int managerId, @RequestParam(value="type", defaultValue="1") Integer type) {
+		return mutualFundService.getMutualFundStatisticsByManager(type, managerId);
+	}
+	
 	@GetMapping("/manager/{managerId}")
 	public Page<MutualFund> getMutualFundByManagerId(@PathVariable int managerId, Pageable pageable) {
 		return mutualFundService.getMutualFundByManagerId(managerId, pageable);

@@ -10,6 +10,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 
 @Entity
 public class Transaction {
@@ -17,6 +19,8 @@ public class Transaction {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 	private int type;
+	
+	@JsonFormat(timezone = "GMT+07:00")
 	private Date date;
 	private String memberName;
 	private String productName;

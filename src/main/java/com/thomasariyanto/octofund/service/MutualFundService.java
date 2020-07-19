@@ -19,6 +19,8 @@ public interface MutualFundService {
 	
 	public List<TransactionStatistic> getMutualFundStatistics(int type);
 	
+	public List<TransactionStatistic> getMutualFundStatisticsByManager(int type, int managerId);
+	
 	public Page<MutualFund> getMutualFundByManagerId(int managerId, Pageable pageable);
 	
 	public List<MutualFund> getAllMutualFundByManagerId(int managerId);

@@ -115,6 +115,11 @@ public class MutualFundServiceImpl implements MutualFundService {
 	}
 	
 	@Override
+	public List<TransactionStatistic> getMutualFundStatisticsByManager(int type, int managerId) {
+		return mutualFundRepo.getStatisticsManager(type, managerId);
+	}
+	
+	@Override
 	public Page<MutualFund> getMutualFundByManagerId(int managerId, Pageable pageable) {
 		return mutualFundRepo.findAllByManagerId(managerId, pageable);
 	}
@@ -299,8 +304,6 @@ public class MutualFundServiceImpl implements MutualFundService {
 	    	priceHistory.setPrice(mutualFund.getLastPrice());
 	    	priceHistoryRepo.save(priceHistory);
 	    }
-	    
-	    
 	    
 		return "Reksadana berhasil diedit!";
 	}

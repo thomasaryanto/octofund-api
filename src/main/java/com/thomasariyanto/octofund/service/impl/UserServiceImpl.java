@@ -128,6 +128,8 @@ private PasswordEncoder pwEncoder = new BCryptPasswordEncoder();
 		user.setId(0);
 		userRepo.save(user);
 		
+		this.emailUtil.sendEmail(user.getEmail(), "Akun Administrator Octofund", "Akun adminsitrator octofund berhasil dibuat menggunakan email ini dengan password: "+user.getPassword());
+		
 		String encodedPassword = pwEncoder.encode(user.getPassword());
 		user.setPassword(encodedPassword);
 		user.setRole(roleRepo.findById(1).get());
@@ -155,6 +157,8 @@ private PasswordEncoder pwEncoder = new BCryptPasswordEncoder();
 		manager.setId(0);
 		managerRepo.save(manager);
 		
+		this.emailUtil.sendEmail(manager.getUser().getEmail(), "Akun Manajer Investasi Octofund", "Akun manajer investasi "+manager.getCompanyName()+" di octofund berhasil dibuat menggunakan email ini dengan password: "+manager.getUser().getPassword());
+		
 		String encodedPassword = pwEncoder.encode(manager.getUser().getPassword());
 		manager.getUser().setPassword(encodedPassword);
 		manager.getUser().setRole(roleRepo.findById(2).get());
@@ -175,13 +179,15 @@ private PasswordEncoder pwEncoder = new BCryptPasswordEncoder();
 		memberRepo.save(member);
 		
 		//proses foto
-		Path pathTempIdentity = Paths.get(StringUtils.cleanPath(imagePath + "\\temp\\") + member.getIdentityPhoto());
-		Path pathIdentity = Paths.get(StringUtils.cleanPath(imagePath + "\\identityPhoto\\") + member.getIdentityPhoto());
-		try {
-			Files.move(pathTempIdentity, pathIdentity, StandardCopyOption.REPLACE_EXISTING);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		System.out.println(member.getIdentityPhoto());
+		
+//		Path pathTempIdentity = Paths.get(StringUtils.cleanPath(imagePath + "\\temp\\") + member.getIdentityPhoto());
+//		Path pathIdentity = Paths.get(StringUtils.cleanPath(imagePath + "\\identityPhoto\\") + member.getIdentityPhoto());
+//		try {
+//			Files.move(pathTempIdentity, pathIdentity, StandardCopyOption.REPLACE_EXISTING);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 		
 		Path pathTempSelfie = Paths.get(StringUtils.cleanPath(imagePath + "\\temp\\") + member.getSelfiePhoto());
 		Path pathSelfie = Paths.get(StringUtils.cleanPath(imagePath + "\\selfiePhoto\\") + member.getSelfiePhoto());
@@ -190,12 +196,12 @@ private PasswordEncoder pwEncoder = new BCryptPasswordEncoder();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		String identityPhotoUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("users/image/identityPhoto/").path(member.getIdentityPhoto()).toUriString();
+		String identityPhotoUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("users/image/temp/").path(member.getIdentityPhoto()).toUriString();
 		String selfiePhotoUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("users/image/selfiePhoto/").path(member.getSelfiePhoto()).toUriString();
 		member.setIdentityPhoto(identityPhotoUri);
 		member.setSelfiePhoto(selfiePhotoUri);
 		
-		//proses tanda tangan
+		//proses tanda  tangan
 		String signatureName = RandomString.make(30)+".png";
 		String signatureClean = StringUtils.cleanPath(signatureName); 
 		Path signaturePath = Paths.get(StringUtils.cleanPath(imagePath + "\\signature\\") + signatureClean);
@@ -356,7 +362,7 @@ private PasswordEncoder pwEncoder = new BCryptPasswordEncoder();
 			findUser.setToken(null);
 			findUser.setTokenExpired(null);
 			userRepo.save(findUser);		
-			return "Email berhasil diverifikasi! Kamu sudah dapat login, namun masih harus menunggu verifikasi data diri maksimal 1 x 24 jam.";
+			return "Email berhasil diverifikasi! Kamu sudah dapat login, namun masih harus menunggu verifikasi data diri untuk melakukan transaksi.";
 		}
 	}
 	
@@ -495,6 +501,9 @@ private PasswordEncoder pwEncoder = new BCryptPasswordEncoder();
 		
 		if(user.getMember() != null) {
 			user.getMember().setIdentityName(user.getName());
+			if(user.isRejected()) {
+				user.setRejected(false);
+			}
 		}
 		
 		if(user.getManager() != null) {
@@ -504,7 +513,6 @@ private PasswordEncoder pwEncoder = new BCryptPasswordEncoder();
 		user.setRole(findUser.getRole());
 		user.setVerified(findUser.isVerified());
 		user.setKyc(findUser.isKyc());
-		user.setRejected(findUser.isRejected());
 		return userRepo.save(user);
 	}
 	
@@ -515,13 +523,18 @@ private PasswordEncoder pwEncoder = new BCryptPasswordEncoder();
 		if(findUser.getRole().getId() == 2) {
 			List<MutualFund> findMutualFunds = mutualFundRepo.findByManagerId(findUser.getId());
 			
+			System.out.println(findMutualFunds.size());
+			
 			if(findMutualFunds.size() > 0) {
 				for (MutualFund mutualFund : findMutualFunds) {
 					
 					MutualFund findMutualFund = mutualFundRepo.findById(mutualFund.getId()).get();
 					List<Portfolio> findPortfolios = portfolioRepo.findAllByMutualFundId(mutualFund.getId());
-					List<Transaction> findTransactions = transactionRepo.findAllByMutualFundIdAndTransactionStatusId(id, 4);
-
+					List<Transaction> findTransactions = transactionRepo.findAllByMutualFundIdAndTransactionStatusId(mutualFund.getId(), 4);
+					
+					System.out.println(findPortfolios.size());
+					System.out.println(findTransactions.size());
+					
 					if(findPortfolios.size() > 0) {
 						for (Portfolio portfolio : findPortfolios) {
 							List<BankAccount> findBankAccount = bankAccountRepo.findAllByUserId(portfolio.getMember().getId());
@@ -539,7 +552,6 @@ private PasswordEncoder pwEncoder = new BCryptPasswordEncoder();
 							transaction.setTransactionStatus(transactionStatusRepo.findById(4).get());
 							transaction.setDate(new Date());
 							transactionRepo.save(transaction);
-							portfolioRepo.deleteById(portfolio.getId());
 				        }
 					}
 					

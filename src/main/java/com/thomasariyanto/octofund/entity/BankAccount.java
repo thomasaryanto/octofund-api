@@ -1,6 +1,7 @@
 package com.thomasariyanto.octofund.entity;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -30,6 +31,7 @@ public class BankAccount {
 	private User user;
 	
 	@NotEmpty(message = "No rekening tidak boleh kosong!")
+	@Column(unique = true)
 	private String accountNumber;
 	
 	@NotEmpty(message = "Nama pemilik rekening tidak boleh kosong!")

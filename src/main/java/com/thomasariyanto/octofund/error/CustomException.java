@@ -65,6 +65,7 @@ public class CustomException {
 	    		message = "Data " + matcher.group(1) + " sudah terdapat di dalam sistem!";
 	    	}
 	    }
+	    ex.printStackTrace();
 	    ErrorMessage err = new ErrorMessage(HttpStatus.BAD_REQUEST, message);
 	    return err;
 	}
