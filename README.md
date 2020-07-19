@@ -1,4 +1,4 @@
-# OctoFund
+# OctoFund REST API
 
 Platform Investasi Reksadana berbasis website.
 
