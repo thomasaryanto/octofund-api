@@ -62,14 +62,11 @@ public class Member {
 	
 	private String identityName;
 	
-//	@NotEmpty(message = "Foto KTP harus diupload")
 	private String identityPhoto;
 	
-//	@NotEmpty(message = "Foto selfie dengan KTP harus diupload")
 	private String selfiePhoto;	
 	
 	private String signature;
-	private int point;
 	
 	public int getId() {
 		return id;
@@ -112,12 +109,6 @@ public class Member {
 	}
 	public void setSelfiePhoto(String selfiePhoto) {
 		this.selfiePhoto = selfiePhoto;
-	}
-	public int getPoint() {
-		return point;
-	}
-	public void setPoint(int point) {
-		this.point = point;
 	}
 	public String getSex() {
 		return sex;

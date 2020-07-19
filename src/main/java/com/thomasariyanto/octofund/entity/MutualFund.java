@@ -13,7 +13,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -64,7 +66,7 @@ public class MutualFund {
 	@NotEmpty(message = "Nama reksadana tidak boleh kosong!")
 	private String name;
 	
-//	@NotEmpty(message = "Minimum beli tidak boleh kosong!")
+	@NotEmpty(message = "Minimum beli tidak boleh kosong!")
 	private int minimumBuy;
 
 	@NotEmpty(message = "Jumlah dana kelolaan tidak boleh kosong!")
@@ -79,11 +81,16 @@ public class MutualFund {
 	@NotEmpty(message = "File fund fact sheet tidak boleh kosong!")
 	private String factsheetFile;
 	
+	@NotNull(message = "Harga tidak boleh kosong!")
 	private double lastPrice;
+	
+	@JsonFormat(timezone = "GMT+07:00")
 	private Date lastUpdatePrice;
 	
-	private boolean isLimited;
+	@NotNull(message = "Stock tidak boleh kosong!")
 	private double stock;
+	
+	private boolean isLimited;
 
 	public int getId() {
 		return id;

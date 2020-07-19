@@ -11,6 +11,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -26,8 +27,11 @@ public class PriceHistory {
 	@JsonBackReference(value="mutualfund-pricehistory")
     private MutualFund mutualFund;
 	
+	@JsonFormat(timezone = "GMT+07:00")
 	private Date date;
+	
 	private double price;
+	
 	public int getId() {
 		return id;
 	}

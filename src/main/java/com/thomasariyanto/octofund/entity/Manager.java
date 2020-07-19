@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.MapsId;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -33,8 +34,12 @@ public class Manager {
 	@JsonIgnore
 	private List<MutualFundPackage> mutualFundPackages;
 	
+	@NotEmpty(message = "Nama perusahaan tidak boleh kosong!")
 	private String companyName;
+	
+	@NotEmpty(message = "Alamat website tidak boleh kosong!")
 	private String website;
+	
 	private String logo;
 
 	public String getWebsite() {
