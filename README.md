@@ -2,12 +2,6 @@
 
 Platform Investasi Reksadana berbasis website.
 
-## Installation
-
-```bash
-npm install
-```
-
 ## First Run
 
 Untuk membuat akun admin pertama kali,
